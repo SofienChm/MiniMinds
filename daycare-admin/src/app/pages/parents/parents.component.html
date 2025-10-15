@@ -1,0 +1,150 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="page-title">Parents Management</h2>
+    <button class="btn btn-primary custom-btn-add" (click)="openAddModal()">
+      <i class="bi bi-plus-circle me-2"></i>Add Parent
+    </button>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="input-group">
+        <span class="input-group-text bg-white border-end-0">
+          <i class="bi bi-search"></i>
+        </span>
+        <input 
+          type="text" 
+          class="form-control border-start-0" 
+          placeholder="Search parents by name, email, or phone..."
+          [(ngModel)]="searchTerm"
+          (input)="searchParents()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Parents Table -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <div *ngIf="!isLoading && filteredParents.length === 0" class="text-center py-5 text-muted">
+        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+        <p>No parents found</p>
+      </div>
+
+      <div *ngIf="!isLoading && filteredParents.length > 0" class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Address</th>
+              <th>Emergency Contact</th>
+              <th>Children</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let parent of filteredParents">
+              <td>{{ parent.firstName }} {{ parent.lastName }}</td>
+              <td>{{ parent.email }}</td>
+              <td>{{ parent.phoneNumber }}</td>
+              <td>{{ parent.address || '-' }}</td>
+              <td>{{ parent.emergencyContact || '-' }}</td>
+              <td>
+                <span class="badge bg-info">{{ parent.children?.length || 0 }}</span>
+              </td>
+              <td>
+                <button class="btn btn-sm btn-outline-primary me-2" (click)="openEditModal(parent)">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" (click)="deleteParent(parent.id!)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ isEditMode ? 'Edit Parent' : 'Add New Parent' }}</h5>
+        <button type="button" class="btn-close" (click)="closeModal()"></button>
+      </div>
+      <div class="modal-body">
+        <form #parentForm="ngForm">
+          <!-- Profile Picture Upload -->
+          <div class="mb-4 text-center">
+            <label class="form-label d-block">Profile Picture</label>
+            <div class="profile-picture-container mb-3">
+              <img 
+                [src]="currentParent.profilePicture || 'assets/default-avatar.svg'" 
+                alt="Profile Picture" 
+                class="profile-picture-preview"
+                style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #dee2e6;">
+            </div>
+            <div class="d-flex justify-content-center gap-2">
+              <label class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-upload me-1"></i>Upload Photo
+                <input type="file" accept="image/*" (change)="onImageSelected($event)" style="display: none;">
+              </label>
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeImage()" *ngIf="currentParent.profilePicture">
+                <i class="bi bi-trash me-1"></i>Remove
+              </button>
+            </div>
+            <small class="text-muted d-block mt-2">Max size: 2MB. Formats: JPG, PNG, GIF</small>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">First Name *</label>
+              <input type="text" class="form-control" [(ngModel)]="currentParent.firstName" name="firstName" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Last Name *</label>
+              <input type="text" class="form-control" [(ngModel)]="currentParent.lastName" name="lastName" required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Email *</label>
+              <input type="email" class="form-control" [(ngModel)]="currentParent.email" name="email" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Phone Number *</label>
+              <input type="tel" class="form-control" [(ngModel)]="currentParent.phoneNumber" name="phoneNumber" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Address</label>
+            <textarea class="form-control" [(ngModel)]="currentParent.address" name="address" rows="2"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Emergency Contact</label>
+            <input type="tel" class="form-control" [(ngModel)]="currentParent.emergencyContact" name="emergencyContact">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="saveParent()" [disabled]="!parentForm.valid">
+          {{ isEditMode ? 'Update' : 'Save' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="showModal" *ngIf="showModal"></div>

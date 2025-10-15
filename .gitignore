@@ -1,0 +1,44 @@
+# Angular
+daycare-admin/node_modules/
+daycare-admin/dist/
+daycare-admin/.angular/
+daycare-admin/.angular/cache/
+daycare-admin/npm-debug.log
+daycare-admin/yarn-error.log
+
+# .NET Core
+DaycareAPI/bin/
+DaycareAPI/obj/
+DaycareAPI/*.user
+DaycareAPI/*.suo
+DaycareAPI/.vs/
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Environment files (contains sensitive data)
+DaycareAPI/appsettings.json
+DaycareAPI/appsettings.Development.json
+**/appsettings.Development.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp

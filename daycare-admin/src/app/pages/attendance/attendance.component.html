@@ -1,0 +1,149 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Attendance Tracking</h2>
+    <button class="btn btn-primary custom-btn-add" (click)="openCheckInModal()">
+      <i class="bi bi-box-arrow-in-right me-2"></i>Check In Child
+    </button>
+  </div>
+
+  <!-- Date Filter -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="row align-items-end">
+        <div class="col-md-4">
+          <label class="form-label">Select Date</label>
+          <input 
+            type="date" 
+            class="form-control" 
+            [(ngModel)]="selectedDate"
+            (change)="onDateChange()">
+        </div>
+        <div class="col-md-8">
+          <div class="d-flex gap-3">
+            <div class="p-3 bg-success bg-opacity-10 rounded flex-fill">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-check-circle text-success fs-3 me-3"></i>
+                <div>
+                  <small class="text-muted">Checked In</small>
+                  <h4 class="mb-0">{{ attendances.length }}</h4>
+                </div>
+              </div>
+            </div>
+            <div class="p-3 bg-warning bg-opacity-10 rounded flex-fill">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-clock text-warning fs-3 me-3"></i>
+                <div>
+                  <small class="text-muted">Still Present</small>
+                  <h4 class="mb-0">{{ getCheckedInCount() }}</h4>
+                </div>
+              </div>
+            </div>
+            <div class="p-3 bg-secondary bg-opacity-10 rounded flex-fill">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-box-arrow-right text-secondary fs-3 me-3"></i>
+                <div>
+                  <small class="text-muted">Checked Out</small>
+                  <h4 class="mb-0">{{ getCheckedOutCount() }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attendance Table -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <div *ngIf="!isLoading && attendances.length === 0" class="text-center py-5 text-muted">
+        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+        <p>No attendance records for this date</p>
+      </div>
+
+      <div *ngIf="!isLoading && attendances.length > 0" class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Child Name</th>
+              <th>Parent Name</th>
+              <th>Check In Time</th>
+              <th>Check Out Time</th>
+              <th>Check In Notes</th>
+              <th>Check Out Notes</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let attendance of attendances">
+              <td>{{ attendance.child?.firstName }} {{ attendance.child?.lastName }}</td>
+              <td>{{ attendance.child?.parent?.firstName }} {{ attendance.child?.parent?.lastName }}</td>
+              <td>{{ attendance.checkInTime | date: 'short' }}</td>
+              <td>{{ attendance.checkOutTime ? (attendance.checkOutTime | date: 'short') : '-' }}</td>
+              <td>{{ attendance.checkInNotes || '-' }}</td>
+              <td>{{ attendance.checkOutNotes || '-' }}</td>
+              <td>
+                <span *ngIf="!attendance.checkOutTime" class="badge bg-success">Present</span>
+                <span *ngIf="attendance.checkOutTime" class="badge bg-secondary">Checked Out</span>
+              </td>
+              <td>
+                <button 
+                  *ngIf="!attendance.checkOutTime" 
+                  class="btn btn-sm btn-outline-warning me-2" 
+                  (click)="checkOut(attendance)">
+                  <i class="bi bi-box-arrow-right"></i> Check Out
+                </button>
+                <button class="btn btn-sm btn-outline-danger" (click)="deleteAttendance(attendance.id!)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Check In Modal -->
+<div class="modal" [class.show]="showCheckInModal" [style.display]="showCheckInModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Check In Child</h5>
+        <button type="button" class="btn-close" (click)="closeCheckInModal()"></button>
+      </div>
+      <div class="modal-body">
+        <form #checkInForm="ngForm">
+          <div class="mb-3">
+            <label class="form-label">Select Child *</label>
+            <select class="form-select" [(ngModel)]="checkInData.childId" name="childId" required>
+              <option [value]="0">Select Child</option>
+              <option *ngFor="let child of getAvailableChildren()" [value]="child.id">
+                {{ child.firstName }} {{ child.lastName }} ({{ child.parent?.firstName }} {{ child.parent?.lastName }})
+              </option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Check In Notes</label>
+            <textarea class="form-control" [(ngModel)]="checkInData.checkInNotes" name="checkInNotes" rows="3" placeholder="Any notes about the child's condition, mood, etc."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeCheckInModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="checkIn()" [disabled]="!checkInForm.valid">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Check In
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="showCheckInModal" *ngIf="showCheckInModal"></div>

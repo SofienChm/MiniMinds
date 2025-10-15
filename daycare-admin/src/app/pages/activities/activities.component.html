@@ -1,0 +1,156 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Daily Activities</h2>
+    <button class="btn btn-primary custom-btn-add" (click)="openAddModal()">
+      <i class="bi bi-plus-circle me-2"></i>Add Activity
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Filter by Date</label>
+          <input 
+            type="date" 
+            class="form-control" 
+            [(ngModel)]="selectedDate"
+            (change)="filterActivities()">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Filter by Child</label>
+          <select class="form-select" [(ngModel)]="selectedChild" (change)="filterActivities()">
+            <option [value]="0">All Children</option>
+            <option *ngFor="let child of children" [value]="child.id">
+              {{ child.firstName }} {{ child.lastName }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activities Table -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <div *ngIf="!isLoading && filteredActivities.length === 0" class="text-center py-5 text-muted">
+        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+        <p>No activities found</p>
+      </div>
+
+      <div *ngIf="!isLoading && filteredActivities.length > 0" class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Child</th>
+              <th>Activity Type</th>
+              <th>Time</th>
+              <th>Duration</th>
+              <th>Food Item</th>
+              <th>Mood</th>
+              <th>Notes</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let activity of filteredActivities">
+              <td>{{ activity.child?.firstName }} {{ activity.child?.lastName }}</td>
+              <td>
+                <span class="badge bg-primary">{{ activity.activityType }}</span>
+              </td>
+              <td>{{ activity.activityTime | date: 'short' }}</td>
+              <td>{{ activity.duration || '-' }}</td>
+              <td>{{ activity.foodItem || '-' }}</td>
+              <td>
+                <span *ngIf="activity.mood" class="badge bg-info">{{ activity.mood }}</span>
+                <span *ngIf="!activity.mood">-</span>
+              </td>
+              <td>{{ activity.notes || '-' }}</td>
+              <td>
+                <button class="btn btn-sm btn-outline-primary me-2" (click)="openEditModal(activity)">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" (click)="deleteActivity(activity.id!)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ isEditMode ? 'Edit Activity' : 'Add New Activity' }}</h5>
+        <button type="button" class="btn-close" (click)="closeModal()"></button>
+      </div>
+      <div class="modal-body">
+        <form #activityForm="ngForm">
+          <div class="mb-3">
+            <label class="form-label">Child *</label>
+            <select class="form-select" [(ngModel)]="currentActivity.childId" name="childId" required>
+              <option [value]="0">Select Child</option>
+              <option *ngFor="let child of children" [value]="child.id">
+                {{ child.firstName }} {{ child.lastName }}
+              </option>
+            </select>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Activity Type *</label>
+              <select class="form-select" [(ngModel)]="currentActivity.activityType" name="activityType" required>
+                <option value="">Select Type</option>
+                <option *ngFor="let type of activityTypes" [value]="type">{{ type }}</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Activity Time *</label>
+              <input type="datetime-local" class="form-control" [(ngModel)]="currentActivity.activityTime" name="activityTime" required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Duration (e.g., 01:30:00)</label>
+              <input type="text" class="form-control" [(ngModel)]="currentActivity.duration" name="duration" placeholder="HH:MM:SS">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Mood</label>
+              <select class="form-select" [(ngModel)]="currentActivity.mood" name="mood">
+                <option value="">Select Mood</option>
+                <option *ngFor="let mood of moodTypes" [value]="mood">{{ mood }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Food Item (for eating activities)</label>
+            <input type="text" class="form-control" [(ngModel)]="currentActivity.foodItem" name="foodItem">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" [(ngModel)]="currentActivity.notes" name="notes" rows="3"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="saveActivity()" [disabled]="!activityForm.valid">
+          {{ isEditMode ? 'Update' : 'Save' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="showModal" *ngIf="showModal"></div>

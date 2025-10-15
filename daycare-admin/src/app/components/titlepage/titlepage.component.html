@@ -1,0 +1,42 @@
+<div class="titlepage-container">
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumbs" *ngIf="breadcrumbs.length > 0">
+    <ol>
+      <li *ngFor="let crumb of breadcrumbs; let last = last">
+        <a *ngIf="crumb.url && !last" [routerLink]="crumb.url">
+          <i *ngIf="crumb.icon" [class]="crumb.icon"></i>
+          {{ crumb.label }}
+        </a>
+        <span *ngIf="!crumb.url || last">
+          <i *ngIf="crumb.icon" [class]="crumb.icon"></i>
+          {{ crumb.label }}
+        </span>
+        <i class="fas fa-chevron-right separator" *ngIf="!last"></i>
+      </li>
+    </ol>
+  </nav>
+
+  <!-- Title Section -->
+  <div class="title-section">
+    <div class="title-content">
+      <div class="title-wrapper">
+        <i *ngIf="icon" [class]="icon + ' title-icon'"></i>
+        <div>
+          <h1 class="page-title">{{ title }}</h1>
+          <p class="page-subtitle" *ngIf="subtitle">{{ subtitle }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="title-actions" *ngIf="actions.length > 0">
+      <button 
+        *ngFor="let action of actions" 
+        [class]="'action-btn ' + (action.class || 'btn-primary')"
+        (click)="action.action()">
+        <i *ngIf="action.icon" [class]="action.icon"></i>
+        {{ action.label }}
+      </button>
+    </div>
+  </div>
+</div>

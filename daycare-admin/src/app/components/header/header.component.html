@@ -1,0 +1,65 @@
+<header class="bg-white shadow-sm py-1 px-4">
+  <div class="d-flex justify-content-between align-items-center">
+    <div>
+      <h4 class="mb-0"></h4>
+    </div>
+    
+    <div class="d-flex align-items-center gap-3">
+      <!-- Notifications -->
+      <div class="position-relative">
+        <button class="btn btn-link position-relative" (click)="toggleNotifications()">
+          <i class="bi bi-bell fs-5"></i>
+          <span *ngIf="unreadCount > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            {{ unreadCount }}
+          </span>
+        </button>
+        
+        <!-- Notifications Dropdown -->
+        <div *ngIf="showNotifications" class="position-absolute end-0 mt-2 bg-white border rounded shadow-lg" style="width: 350px; max-height: 400px; overflow-y: auto; z-index: 1000;">
+          <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Notifications</h6>
+            <button *ngIf="notifications.length > 0" class="btn btn-sm btn-link" (click)="markAllAsRead()">
+              Mark all as read
+            </button>
+          </div>
+          
+          <div *ngIf="notifications.length === 0" class="p-4 text-center text-muted">
+            No new notifications
+          </div>
+          
+          <div *ngFor="let notification of notifications" class="p-3 border-bottom notification-item" (click)="markAsRead(notification.id)">
+            <div class="d-flex justify-content-between">
+              <strong class="text-truncate">{{ notification.title }}</strong>
+              <small class="text-muted">{{ notification.createdAt | date: 'short' }}</small>
+            </div>
+            <p class="mb-0 small text-muted">{{ notification.message }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- User Profile -->
+      <div class="d-flex align-items-center gap-2">
+        <div *ngIf="currentUser?.profilePicture; else initials" class="rounded-circle overflow-hidden" style="width: 40px; height: 40px;">
+          <img [src]="currentUser!.profilePicture" alt="Profile" class="w-100 h-100 object-fit-cover">
+        </div>
+        <ng-template #initials>
+          <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+            <strong>{{ getInitials() }}</strong>
+          </div>
+        </ng-template>
+        
+        <div class="dropdown">
+          <button class="btn btn-link text-decoration-none text-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <span>{{ currentUser?.firstName }} {{ currentUser?.lastName }}</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
+            <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" (click)="logout()"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

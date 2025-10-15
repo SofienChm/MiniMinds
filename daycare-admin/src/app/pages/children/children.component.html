@@ -1,0 +1,312 @@
+<div class="container-fluid py-4">
+  <app-titlepage
+  [title]="'Children'"
+  [breadcrumbs]="breadcrumbs">
+</app-titlepage>
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Children Management</h2>
+    <button class="btn btn-primary custom-btn-add" (click)="openAddModal()">
+      <i class="bi bi-plus-circle me-2"></i>Add Child
+    </button>
+  </div>
+
+  <!-- Search and Filter Bar -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <!-- Search -->
+        <div class="col-md-4">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0">
+              <i class="bi bi-search"></i>
+            </span>
+            <input 
+              type="text" 
+              class="form-control border-start-0" 
+              placeholder="Search by name or parent..."
+              [(ngModel)]="searchTerm"
+              (input)="searchChildren()">
+          </div>
+        </div>
+
+        <!-- Date Range Filter -->
+        <div class="col-md-3">
+          <input 
+            type="date" 
+            class="form-control" 
+            placeholder="Start Date"
+            [(ngModel)]="filterStartDate"
+            (change)="applyFilters()">
+        </div>
+        <div class="col-md-3">
+          <input 
+            type="date" 
+            class="form-control" 
+            placeholder="End Date"
+            [(ngModel)]="filterEndDate"
+            (change)="applyFilters()">
+        </div>
+
+        <!-- Sort Options -->
+        <div class="col-md-2">
+          <select class="form-select" [(ngModel)]="sortBy" (change)="applyFilters()">
+            <option value="name">Sort by Name</option>
+            <option value="date">Sort by Date</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Filter Actions -->
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <div class="btn-group" role="group">
+          <button 
+            type="button" 
+            class="btn btn-sm"
+            [class.btn-primary]="sortOrder === 'asc'"
+            [class.btn-outline-primary]="sortOrder !== 'asc'"
+            (click)="sortOrder = 'asc'; applyFilters()">
+            <i class="bi bi-sort-alpha-down"></i> Ascending
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-sm"
+            [class.btn-primary]="sortOrder === 'desc'"
+            [class.btn-outline-primary]="sortOrder !== 'desc'"
+            (click)="sortOrder = 'desc'; applyFilters()">
+            <i class="bi bi-sort-alpha-up"></i> Descending
+          </button>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-outline-secondary" (click)="clearFilters()">
+            <i class="bi bi-x-circle me-1"></i>Clear Filters
+          </button>
+          <div class="btn-group" role="group">
+            <button 
+              type="button" 
+              class="btn btn-sm"
+              [class.btn-primary]="viewMode === 'list'"
+              [class.btn-outline-primary]="viewMode !== 'list'"
+              (click)="toggleViewMode('list')">
+              <i class="bi bi-list-ul"></i> List
+            </button>
+            <button 
+              type="button" 
+              class="btn btn-sm"
+              [class.btn-primary]="viewMode === 'grid'"
+              [class.btn-outline-primary]="viewMode !== 'grid'"
+              (click)="toggleViewMode('grid')">
+              <i class="bi bi-grid-3x3-gap"></i> Grid
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Children List/Grid View -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <div *ngIf="!isLoading && filteredChildren.length === 0" class="text-center py-5 text-muted">
+        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+        <p>No children found</p>
+      </div>
+
+      <!-- List View -->
+      <div *ngIf="!isLoading && filteredChildren.length > 0 && viewMode === 'list'" class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Picture</th>
+              <th>Name</th>
+              <th>Age</th>
+              <th>Gender</th>
+              <th>Parent</th>
+              <th>Enrollment Date</th>
+              <th>Allergies</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let child of filteredChildren">
+              <td>
+                <img 
+                  [src]="child.profilePicture || 'assets/default-avatar.svg'" 
+                  alt="Profile" 
+                  style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+              </td>
+              <td>{{ child.firstName }} {{ child.lastName }}</td>
+              <td>{{ calculateAge(child.dateOfBirth) }} years</td>
+              <td>{{ child.gender }}</td>
+              <td>{{ child.parent?.firstName }} {{ child.parent?.lastName }}</td>
+              <td>{{ formatDate(child.enrollmentDate) }}</td>
+              <td>
+                <span *ngIf="child.allergies" class="badge bg-warning text-dark">
+                  <i class="bi bi-exclamation-triangle me-1"></i>{{ child.allergies }}
+                </span>
+                <span *ngIf="!child.allergies">-</span>
+              </td>
+              <td>
+                <button class="btn btn-sm btn-outline-primary me-2" (click)="openEditModal(child)">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" (click)="deleteChild(child.id!)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Grid View -->
+      <div *ngIf="!isLoading && filteredChildren.length > 0 && viewMode === 'grid'" class="row g-4">
+        <div class="col-md-6 col-lg-4 col-xl-4  " *ngFor="let child of filteredChildren">
+          <div class="card h-100 shadow-sm hover-card">
+            <div class="card-body text-center">
+              <img 
+                [src]="child.profilePicture || 'assets/default-avatar.svg'" 
+                alt="Profile" 
+                class="mb-3"
+                style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #e9ecef;">
+              <h5 class="card-title mb-1">{{ child.firstName }} {{ child.lastName }}</h5>
+              <p class="text-muted small mb-2">{{ calculateAge(child.dateOfBirth) }} years old • {{ child.gender }}</p>
+              
+              <div class="mb-2">
+                <small class="text-muted">
+                  <i class="bi bi-person me-1"></i>{{ child.parent?.firstName }} {{ child.parent?.lastName }}
+                </small>
+              </div>
+
+              <div class="mb-2">
+                <small class="text-muted">
+                  <i class="bi bi-calendar me-1"></i>Enrolled: {{ formatDate(child.enrollmentDate) }}
+                </small>
+              </div>
+
+              <div class="mb-3">
+                <span *ngIf="child.allergies" class="badge bg-warning text-dark">
+                  <i class="bi bi-exclamation-triangle me-1"></i>{{ child.allergies }}
+                </span>
+                <span *ngIf="!child.allergies" class="badge bg-success">
+                  <i class="bi bi-check-circle me-1"></i>No Allergies
+                </span>
+              </div>
+
+              <div class="d-flex gap-2 justify-content-center">
+                <button class="btn btn-sm btn-outline-primary" (click)="openEditModal(child)">
+                  <i class="bi bi-pencil"></i> Edit
+                </button>
+                <button class="btn btn-sm btn-outline-danger" (click)="deleteChild(child.id!)">
+                  <i class="bi bi-trash"></i> Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ isEditMode ? 'Edit Child' : 'Add New Child' }}</h5>
+        <button type="button" class="btn-close" (click)="closeModal()"></button>
+      </div>
+      <div class="modal-body">
+        <form #childForm="ngForm">
+          <!-- Profile Picture Upload -->
+          <div class="mb-4 text-center">
+            <label class="form-label d-block">Profile Picture</label>
+            <div class="profile-picture-container mb-3">
+              <img 
+                [src]="currentChild.profilePicture || 'assets/default-avatar.svg'" 
+                alt="Profile Picture" 
+                class="profile-picture-preview"
+                style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #dee2e6;">
+            </div>
+            <div class="d-flex justify-content-center gap-2">
+              <label class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-upload me-1"></i>Upload Photo
+                <input type="file" accept="image/*" (change)="onImageSelected($event)" style="display: none;">
+              </label>
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeImage()" *ngIf="currentChild.profilePicture">
+                <i class="bi bi-trash me-1"></i>Remove
+              </button>
+            </div>
+            <small class="text-muted d-block mt-2">Max size: 2MB. Formats: JPG, PNG, GIF</small>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">First Name *</label>
+              <input type="text" class="form-control" [(ngModel)]="currentChild.firstName" name="firstName" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Last Name *</label>
+              <input type="text" class="form-control" [(ngModel)]="currentChild.lastName" name="lastName" required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Date of Birth *</label>
+              <input type="date" class="form-control" [(ngModel)]="currentChild.dateOfBirth" name="dateOfBirth" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Gender *</label>
+              <select class="form-select" [(ngModel)]="currentChild.gender" name="gender" required>
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Enrollment Date *</label>
+              <input type="date" class="form-control" [(ngModel)]="currentChild.enrollmentDate" name="enrollmentDate" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Parent *</label>
+              <select class="form-select" [(ngModel)]="currentChild.parentId" name="parentId" required>
+                <option [value]="0" disabled>Select Parent</option>
+                <option *ngFor="let parent of parents" [value]="parent.id">
+                  {{ parent.firstName }} {{ parent.lastName }}
+                </option>
+              </select>
+              <div *ngIf="parents.length === 0" class="form-text text-danger">
+                No parents available. Please add a parent first.
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Allergies</label>
+            <textarea class="form-control" [(ngModel)]="currentChild.allergies" name="allergies" rows="2"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Medical Notes</label>
+            <textarea class="form-control" [(ngModel)]="currentChild.medicalNotes" name="medicalNotes" rows="2"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="saveChild()" [disabled]="!childForm.valid">
+          {{ isEditMode ? 'Update' : 'Save' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="showModal" *ngIf="showModal"></div>

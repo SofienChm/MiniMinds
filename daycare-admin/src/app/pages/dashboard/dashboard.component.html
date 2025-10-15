@@ -1,0 +1,119 @@
+<div class="container-fluid py-4">
+  <h2 class="mb-4">Dashboard</h2>
+
+  <!-- Stats Cards -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-muted mb-2">Total Parents</h6>
+              <h3 class="mb-0">{{ stats.totalParents }}</h3>
+            </div>
+            <div class="bg-primary bg-opacity-10 p-3 rounded">
+              <i class="bi bi-people text-primary fs-2"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-muted mb-2">Total Children</h6>
+              <h3 class="mb-0">{{ stats.totalChildren }}</h3>
+            </div>
+            <div class="bg-success bg-opacity-10 p-3 rounded">
+              <i class="bi bi-person-hearts text-success fs-2"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-muted mb-2">Checked In Today</h6>
+              <h3 class="mb-0">{{ stats.checkedInToday }}</h3>
+            </div>
+            <div class="bg-info bg-opacity-10 p-3 rounded">
+              <i class="bi bi-box-arrow-in-right text-info fs-2"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-muted mb-2">Checked Out Today</h6>
+              <h3 class="mb-0">{{ stats.checkedOutToday }}</h3>
+            </div>
+            <div class="bg-warning bg-opacity-10 p-3 rounded">
+              <i class="bi bi-box-arrow-right text-warning fs-2"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Attendance -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+          <h5 class="mb-0">Today's Attendance</h5>
+        </div>
+        <div class="card-body">
+          <div *ngIf="isLoading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+
+          <div *ngIf="!isLoading && recentAttendance.length === 0" class="text-center py-5 text-muted">
+            <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+            <p>No attendance records for today</p>
+          </div>
+
+          <div *ngIf="!isLoading && recentAttendance.length > 0" class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Child Name</th>
+                  <th>Parent Name</th>
+                  <th>Check In</th>
+                  <th>Check Out</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let attendance of recentAttendance">
+                  <td>{{ attendance.child?.firstName }} {{ attendance.child?.lastName }}</td>
+                  <td>{{ attendance.child?.parent?.firstName }} {{ attendance.child?.parent?.lastName }}</td>
+                  <td>{{ attendance.checkInTime | date: 'short' }}</td>
+                  <td>{{ attendance.checkOutTime ? (attendance.checkOutTime | date: 'short') : '-' }}</td>
+                  <td>
+                    <span *ngIf="!attendance.checkOutTime" class="badge bg-success">Present</span>
+                    <span *ngIf="attendance.checkOutTime" class="badge bg-secondary">Checked Out</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
