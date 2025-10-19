@@ -5,7 +5,7 @@ import { ChildService } from '../../services/child.service';
 import { ParentService } from '../../services/parent.service';
 import { Child } from '../../models/child.model';
 import { Parent } from '../../models/parent.model';
-import { TitlepageComponent } from '../../components/titlepage/titlepage.component';
+import { TitlepageComponent, Breadcrumb, TitleAction } from '../../components/titlepage/titlepage.component';
 
 @Component({
   selector: 'app-children',
@@ -23,6 +23,21 @@ export class ChildrenComponent implements OnInit {
   isLoading = true;
   showModal = false;
   isEditMode = false;
+  
+  // Titlepage configuration
+  breadcrumbs: Breadcrumb[] = [
+    { label: 'Dashboard', url: '/dashboard', icon: 'bi bi-house' },
+    { label: 'Children', icon: 'bi bi-people' }
+  ];
+  
+  titleActions: TitleAction[] = [
+    {
+      label: 'Add Child',
+      icon: 'bi bi-plus-circle',
+      class: 'btn btn-primary',
+      action: () => this.openAddModal()
+    }
+  ];
   
   // View mode: 'list' or 'grid'
   viewMode: 'list' | 'grid' = 'list';

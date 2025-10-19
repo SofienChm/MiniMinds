@@ -5,15 +5,30 @@ import { AttendanceService } from '../../services/attendance.service';
 import { ChildService } from '../../services/child.service';
 import { Attendance } from '../../models/attendance.model';
 import { Child } from '../../models/child.model';
+import { TitlepageComponent, Breadcrumb, TitleAction } from '../../components/titlepage/titlepage.component';
 
 @Component({
   selector: 'app-attendance',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TitlepageComponent],
   templateUrl: './attendance.component.html',
   styleUrls: ['./attendance.component.css']
 })
 export class AttendanceComponent implements OnInit {
+  breadcrumbs: Breadcrumb[] = [
+    { label: 'Dashboard', url: '/dashboard', icon: 'bi bi-house' },
+    { label: 'Attendance', icon: 'bi bi-clipboard-check' }
+  ];
+  
+  titleActions: TitleAction[] = [
+    {
+      label: 'Check In Child',
+      icon: 'bi bi-box-arrow-in-right',
+      class: 'btn btn-primary',
+      action: () => this.openCheckInModal()
+    }
+  ];
+
   attendances: Attendance[] = [];
   children: Child[] = [];
   selectedDate: string = new Date().toISOString().split('T')[0];

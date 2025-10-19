@@ -1,3 +1,70 @@
-.modal.show {
-  background-color: rgba(0, 0, 0, 0.5);
+.avatar {
+  display: inline-block;
+}
+
+.avatar-lg {
+  width: 60px;
+  height: 60px;
+}
+
+.avatar-md {
+  width: 40px;
+  height: 40px;
+}
+
+.card {
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 1rem;
+}
+
+.card-footer {
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  padding: 1rem;
+}
+
+.bg-light {
+  background-color: #f8f9fa !important;
+}
+
+.link-primary {
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+.link-primary:hover {
+  color: #0a58ca;
+  text-decoration: underline;
+}
+
+.btn-white {
+  background-color: white;
+  border: 1px solid #dee2e6;
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.dropdown-menu {
+  border: 1px solid #dee2e6;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

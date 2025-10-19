@@ -1,0 +1,145 @@
+<div class="messenger-container">
+  <!-- Left Sidebar - Conversations List -->
+  <div class="conversations-sidebar">
+    <!-- Header with Search -->
+    <div class="sidebar-header">
+      <h5 class="mb-3">Messages</h5>
+      
+      <!-- Search Conversations -->
+      <div class="search-container mb-3">
+        <div class="input-group">
+          <span class="input-group-text">
+            <i class="fas fa-search"></i>
+          </span>
+          <input 
+            type="text" 
+            class="form-control" 
+            placeholder="Search conversations..." 
+            [(ngModel)]="searchTerm"
+            (input)="searchConversations()">
+        </div>
+      </div>
+
+      <!-- New Conversation -->
+      <div class="new-conversation mb-3">
+        <div class="position-relative">
+          <input 
+            type="text" 
+            class="form-control" 
+            [(ngModel)]="userSearchTerm" 
+            (input)="onUserSearchInput()" 
+            (focus)="onUserSearchFocus()" 
+            placeholder="Start new conversation...">
+          
+          <!-- User Dropdown -->
+          <div *ngIf="showUserDropdown && filteredUsers.length > 0" class="dropdown-menu show w-100 user-dropdown">
+            <div *ngFor="let user of filteredUsers" class="dropdown-item user-item" (click)="startNewConversation(user)">
+              <div class="d-flex align-items-center">
+                <div class="avatar-circle me-3">
+                  <span class="avatar-initials">{{user.name.charAt(0)}}</span>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="fw-semibold">{{user.name}}</div>
+                  <small class="text-muted">{{user.email}}</small>
+                </div>
+                <span class="badge badge-sm" [class]="'bg-' + (user.role === 'Teacher' ? 'success' : 'info')">
+                  <i [class]="getRoleIcon(user.role)"></i> {{user.role}}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conversations List -->
+    <div class="conversations-list">
+      <div *ngFor="let conversation of filteredConversations" 
+           class="conversation-item" 
+           [class.active]="selectedConversation?.id === conversation.id"
+           (click)="selectConversation(conversation)">
+        <div class="d-flex align-items-center">
+          <div class="avatar-circle me-3">
+            <span class="avatar-initials">{{conversation.user.name.charAt(0)}}</span>
+          </div>
+          <div class="flex-grow-1">
+            <div class="d-flex justify-content-between align-items-start">
+              <h6 class="mb-1" [class.fw-bold]="conversation.unreadCount > 0">{{conversation.user.name}}</h6>
+              <small class="text-muted">{{formatTimestamp(conversation.lastMessageTime)}}</small>
+            </div>
+            <p class="mb-0 last-message" [class.fw-bold]="conversation.unreadCount > 0">{{conversation.lastMessage}}</p>
+            <div class="d-flex justify-content-between align-items-center mt-1">
+              <span class="badge badge-sm" [class]="'bg-' + (conversation.user.role === 'Teacher' ? 'success' : 'info')">
+                {{conversation.user.role}}
+              </span>
+              <span *ngIf="conversation.unreadCount > 0" class="badge bg-primary rounded-pill">{{conversation.unreadCount}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- No conversations -->
+      <div *ngIf="filteredConversations.length === 0" class="text-center py-4">
+        <i class="fas fa-comments fa-2x text-muted mb-2"></i>
+        <p class="text-muted">No conversations found</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side - Chat Area -->
+  <div class="chat-area">
+    <div *ngIf="selectedConversation" class="h-100 d-flex flex-column">
+      <!-- Chat Header -->
+      <div class="chat-header">
+        <div class="d-flex align-items-center">
+          <div class="avatar-circle me-3">
+            <span class="avatar-initials">{{selectedConversation.user.name.charAt(0)}}</span>
+          </div>
+          <div>
+            <h6 class="mb-0">{{selectedConversation.user.name}}</h6>
+            <small class="text-muted">{{selectedConversation.user.email}} • {{selectedConversation.user.role}}</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages Area -->
+      <div class="messages-area flex-grow-1">
+        <div *ngFor="let message of selectedConversation.messages" 
+             class="message-bubble" 
+             [class.sent]="message.isSentByMe"
+             [class.received]="!message.isSentByMe">
+          <div class="message-content">
+            {{message.content}}
+          </div>
+          <div class="message-time">
+            {{formatTimestamp(message.timestamp)}}
+          </div>
+        </div>
+      </div>
+
+      <!-- Message Input -->
+      <div class="message-input-area">
+        <div class="input-group">
+          <input 
+            type="text" 
+            class="form-control" 
+            [(ngModel)]="newMessageContent" 
+            (keyup.enter)="sendMessage()"
+            placeholder="Type a message...">
+          <button class="btn btn-primary" (click)="sendMessage()" [disabled]="!newMessageContent.trim()">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- No conversation selected -->
+    <div *ngIf="!selectedConversation" class="no-conversation-selected">
+      <div class="text-center">
+        <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+        <h4 class="text-muted">Select a conversation</h4>
+        <p class="text-muted">Choose a conversation from the list to start messaging</p>
+      </div>
+    </div>
+  </div>
+</div>

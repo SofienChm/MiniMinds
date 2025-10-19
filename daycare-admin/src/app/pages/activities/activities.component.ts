@@ -5,15 +5,30 @@ import { DailyActivityService } from '../../services/daily-activity.service';
 import { ChildService } from '../../services/child.service';
 import { DailyActivity, ActivityTypes, MoodTypes } from '../../models/daily-activity.model';
 import { Child } from '../../models/child.model';
+import { TitlepageComponent, Breadcrumb, TitleAction } from '../../components/titlepage/titlepage.component';
 
 @Component({
   selector: 'app-activities',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TitlepageComponent],
   templateUrl: './activities.component.html',
   styleUrls: ['./activities.component.css']
 })
 export class ActivitiesComponent implements OnInit {
+  breadcrumbs: Breadcrumb[] = [
+    { label: 'Dashboard', url: '/dashboard', icon: 'bi bi-house' },
+    { label: 'Activities', icon: 'bi bi-calendar-check' }
+  ];
+  
+  titleActions: TitleAction[] = [
+    {
+      label: 'Add Activity',
+      icon: 'bi bi-plus-circle',
+      class: 'btn btn-primary',
+      action: () => this.openAddModal()
+    }
+  ];
+
   activities: DailyActivity[] = [];
   filteredActivities: DailyActivity[] = [];
   children: Child[] = [];

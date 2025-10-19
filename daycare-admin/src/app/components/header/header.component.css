@@ -10,3 +10,25 @@
 .dropdown-toggle::after {
   margin-left: 0.5em;
 }
+
+.btn-header {
+  width: 2.313rem;
+  height: 2.313rem;
+  font-size: 0.95rem;
+  border: 1px solid #E9EDF4 !important;
+  color: #515B73 !important;
+  border-radius: 5px;
+  padding: 0.5rem 0.85rem;
+}
+
+.btn-header i {
+  padding: 0rem;
+  margin: -0.5rem;
+  font-size: 0.95rem;
+}
+
+.image-profile-header{
+  width: 2rem;
+  height: 2rem;
+  border-radius: 4px;
+}

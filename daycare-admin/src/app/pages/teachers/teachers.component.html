@@ -1,0 +1,190 @@
+<div class="container-fluid py-4 teacher-component">
+      <app-titlepage 
+        title="Teachers Management" 
+        [breadcrumbs]="breadcrumbs" 
+        [actions]="titleActions">
+      </app-titlepage>
+  <!-- Search Bar -->
+    <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="input-group">
+        <span class="input-group-text bg-white border-end-0">
+          <i class="bi bi-search"></i>
+        </span>
+        <input 
+          type="text" 
+          class="form-control border-start-0" 
+          placeholder="Search teachers by name..."
+          [(ngModel)]="searchTerm"
+          (input)="searchTeachers()">
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="text-center">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Teachers Cards -->
+  <div *ngIf="!isLoading" class="row">
+    <div class="col-md-6 col-lg-4 mb-4" *ngFor="let teacher of filteredTeachers">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center mb-3">
+            <div class="avatar-circle me-3">
+              <img *ngIf="teacher.profilePicture" [src]="teacher.profilePicture"
+                [alt]="teacher.firstName + ' ' + teacher.lastName" class="rounded-circle">
+              <span *ngIf="!teacher.profilePicture" class="avatar-initials">
+                {{teacher.firstName.charAt(0)}}{{teacher.lastName.charAt(0)}}
+              </span>
+            </div>
+            <div>
+              <h5 class="card-title mb-1">{{teacher.firstName}} {{teacher.lastName}}</h5>
+              <p class="text-muted mb-0">{{teacher.specialization || 'General'}}</p>
+            </div>
+          </div>
+
+          <div class="teacher-details">
+            <p class="mb-2">
+              <i class="fas fa-envelope text-primary me-2"></i>
+              <small>{{teacher.email}}</small>
+            </p>
+            <p class="mb-2" *ngIf="teacher.phone">
+              <i class="fas fa-phone text-success me-2"></i>
+              <small>{{teacher.phone}}</small>
+            </p>
+            <p class="mb-2">
+              <i class="fas fa-calendar text-info me-2"></i>
+              <small>Hired: {{formatDate(teacher.hireDate)}}</small>
+            </p>
+            <p class="mb-2">
+              <i class="fas fa-dollar-sign text-warning me-2"></i>
+              <small>{{formatCurrency(teacher.salary)}}</small>
+            </p>
+            <p class="mb-0">
+              <span class="badge" [class]="teacher.isActive ? 'bg-success' : 'bg-secondary'">
+                {{teacher.isActive ? 'Active' : 'Inactive'}}
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div class="card-footer bg-transparent">
+          <div class="btn-group w-100" role="group">
+            <button type="button" class="btn btn-outline-primary btn-sm" (click)="openEditModal(teacher)">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-sm" (click)="deleteTeacher(teacher.id)">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Teachers Message -->
+  <div *ngIf="!isLoading && filteredTeachers.length === 0" class="text-center py-5">
+    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+    <h4 class="text-muted">No teachers found</h4>
+    <p class="text-muted">{{searchTerm ? 'Try adjusting your search criteria' : 'Start by adding your first teacher'}}
+    </p>
+  </div>
+</div>
+
+<!-- Teacher Modal -->
+<div class="modal fade" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{isEditMode ? 'Edit Teacher' : 'Add New Teacher'}}</h5>
+        <button type="button" class="btn-close" (click)="closeModal()"></button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="saveTeacher()" #teacherForm="ngForm">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="firstName" class="form-label">First Name *</label>
+              <input type="text" class="form-control" id="firstName" [(ngModel)]="currentTeacher.firstName"
+                name="firstName" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="lastName" class="form-label">Last Name *</label>
+              <input type="text" class="form-control" id="lastName" [(ngModel)]="currentTeacher.lastName"
+                name="lastName" required>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="email" class="form-label">Email *</label>
+              <input type="email" class="form-control" id="email" [(ngModel)]="currentTeacher.email" name="email"
+                required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="phone" class="form-label">Phone</label>
+              <input type="tel" class="form-control" id="phone" [(ngModel)]="currentTeacher.phone" name="phone">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="address" class="form-label">Address</label>
+            <textarea class="form-control" id="address" [(ngModel)]="currentTeacher.address" name="address"
+              rows="2"></textarea>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="dateOfBirth" class="form-label">Date of Birth *</label>
+              <input type="date" class="form-control" id="dateOfBirth" [(ngModel)]="currentTeacher.dateOfBirth"
+                name="dateOfBirth" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="hireDate" class="form-label">Hire Date *</label>
+              <input type="date" class="form-control" id="hireDate" [(ngModel)]="currentTeacher.hireDate"
+                name="hireDate" required>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="specialization" class="form-label">Specialization</label>
+              <input type="text" class="form-control" id="specialization" [(ngModel)]="currentTeacher.specialization"
+                name="specialization" placeholder="e.g., Early Childhood, Special Needs">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="salary" class="form-label">Salary *</label>
+              <input type="number" class="form-control" id="salary" [(ngModel)]="currentTeacher.salary" name="salary"
+                required min="0" step="0.01">
+            </div>
+          </div>
+
+          <div class="mb-3" *ngIf="!isEditMode">
+            <label for="password" class="form-label">Password *</label>
+            <input type="password" class="form-control" id="password" [(ngModel)]="currentTeacher.password"
+              name="password" [required]="!isEditMode">
+          </div>
+
+          <div class="mb-3">
+            <label for="profilePicture" class="form-label">Profile Picture URL</label>
+            <input type="url" class="form-control" id="profilePicture" [(ngModel)]="currentTeacher.profilePicture"
+              name="profilePicture">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="saveTeacher()">
+          {{isEditMode ? 'Update' : 'Create'}} Teacher
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Backdrop -->
+<div class="modal-backdrop fade" [class.show]="showModal" *ngIf="showModal"></div>

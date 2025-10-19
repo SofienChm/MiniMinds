@@ -84,12 +84,39 @@ using (var scope = app.Services.CreateScope())
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
         // Apply pending migrations
-        await context.Database.MigrateAsync();
-        Console.WriteLine("Database migrations applied successfully.");
+        // await context.Database.MigrateAsync();
+        Console.WriteLine("Database connection established.");
 
-        // Seed data
-        var seeder = new DatabaseSeeder(context, userManager, roleManager);
-        await seeder.SeedAsync();
+        // Create roles if they don't exist
+        string[] roles = { "Admin", "Parent", "Teacher" };
+        foreach (string role in roles)
+        {
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new IdentityRole(role));
+            }
+        }
+
+        // Create default admin user if it doesn't exist
+        var adminEmail = "admin@daycare.com";
+        var adminUser = await userManager.FindByEmailAsync(adminEmail);
+        if (adminUser == null)
+        {
+            adminUser = new ApplicationUser
+            {
+                UserName = adminEmail,
+                Email = adminEmail,
+                FirstName = "Admin",
+                LastName = "User",
+                EmailConfirmed = true
+            };
+            
+            var result = await userManager.CreateAsync(adminUser, "Admin@123");
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(adminUser, "Admin");
+            }
+        }
     }
     catch (Exception ex)
     {
@@ -107,8 +134,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowAngularApp");
 
-app.UseAuthentication();
-app.UseAuthorization();
+// Serve static files
+app.UseStaticFiles();
+
+// app.UseAuthentication();
+// app.UseAuthorization();
 
 app.MapControllers();
 

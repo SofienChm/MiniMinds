@@ -1,7 +1,4 @@
 .titlepage-container {
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 1.5rem 2rem;
   margin-bottom: 1.5rem;
 }
 
@@ -82,7 +79,7 @@
 }
 
 .page-title {
-  font-size: 1.875rem;
+  font-size: 22px;
   font-weight: 700;
   color: #111827;
   margin: 0;
@@ -229,4 +226,15 @@
     padding: 0.5rem 1rem;
     font-size: 0.8125rem;
   }
+}
+
+.titlepage-breadcrumbs li:not(:last-child)::after {
+  content: '/';
+  color: #6A7287;
+  opacity: 0.4;
+  float: left;
+  /* padding-right: 0.5rem; */    
+}
+.titlepage-breadcrumbs li a  {
+  color: #6A7287;
 }

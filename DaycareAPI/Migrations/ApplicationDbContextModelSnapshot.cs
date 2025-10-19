@@ -155,6 +155,9 @@ namespace DaycareAPI.Migrations
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<DateTime>("EnrollmentDate")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -232,6 +235,83 @@ namespace DaycareAPI.Migrations
                     b.ToTable("DailyActivities");
                 });
 
+            modelBuilder.Entity("DaycareAPI.Models.DaycareProgram", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time(6)");
+
+                    b.Property<int>("MaxAge")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MinAge")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time(6)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DaycarePrograms");
+                });
+
+            modelBuilder.Entity("DaycareAPI.Models.Message", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("RecipientId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipientId");
+
+                    b.HasIndex("SenderId", "RecipientId", "SentAt");
+
+                    b.ToTable("Messages");
+                });
+
             modelBuilder.Entity("DaycareAPI.Models.Notification", b =>
                 {
                     b.Property<int>("Id")
@@ -305,6 +385,9 @@ namespace DaycareAPI.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
 
+                    b.Property<string>("ProfilePicture")
+                        .HasColumnType("longtext");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
@@ -314,6 +397,31 @@ namespace DaycareAPI.Migrations
                         .IsUnique();
 
                     b.ToTable("Parents");
+                });
+
+            modelBuilder.Entity("DaycareAPI.Models.ProgramEnrollment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("ChildId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EnrolledAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("ProgramId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChildId");
+
+                    b.HasIndex("ProgramId", "ChildId")
+                        .IsUnique();
+
+                    b.ToTable("ProgramEnrollments");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -477,6 +585,44 @@ namespace DaycareAPI.Migrations
                     b.Navigation("Child");
                 });
 
+            modelBuilder.Entity("DaycareAPI.Models.Message", b =>
+                {
+                    b.HasOne("DaycareAPI.Models.ApplicationUser", "Recipient")
+                        .WithMany()
+                        .HasForeignKey("RecipientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DaycareAPI.Models.ApplicationUser", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Recipient");
+
+                    b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("DaycareAPI.Models.ProgramEnrollment", b =>
+                {
+                    b.HasOne("DaycareAPI.Models.Child", "Child")
+                        .WithMany()
+                        .HasForeignKey("ChildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DaycareAPI.Models.DaycareProgram", "Program")
+                        .WithMany("Enrollments")
+                        .HasForeignKey("ProgramId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Child");
+
+                    b.Navigation("Program");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -533,6 +679,11 @@ namespace DaycareAPI.Migrations
                     b.Navigation("Attendances");
 
                     b.Navigation("DailyActivities");
+                });
+
+            modelBuilder.Entity("DaycareAPI.Models.DaycareProgram", b =>
+                {
+                    b.Navigation("Enrollments");
                 });
 
             modelBuilder.Entity("DaycareAPI.Models.Parent", b =>

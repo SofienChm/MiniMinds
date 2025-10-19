@@ -1,0 +1,118 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="page-title">{{ isEditMode ? 'Edit Program' : 'Add New Program' }}</h2>
+    <button class="btn btn-secondary" (click)="goBack()">
+      <i class="bi bi-arrow-left me-2"></i>Back to Programs
+    </button>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <form #programForm="ngForm" (ngSubmit)="saveProgram()">
+            <div class="row">
+              <div class="col-md-12 mb-3">
+                <label class="form-label">Title *</label>
+                <input type="text" class="form-control" [(ngModel)]="program.title" name="title" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Description</label>
+              <textarea class="form-control" [(ngModel)]="program.description" name="description" rows="3"></textarea>
+            </div>
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Capacity *</label>
+                <input type="number" class="form-control" [(ngModel)]="program.capacity" name="capacity" required min="1">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Min Age *</label>
+                <input type="number" class="form-control" [(ngModel)]="program.minAge" name="minAge" required min="0">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Max Age *</label>
+                <input type="number" class="form-control" [(ngModel)]="program.maxAge" name="maxAge" required min="0">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Date *</label>
+                <input type="date" class="form-control" [(ngModel)]="program.date" name="date" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Start Time *</label>
+                <input type="time" class="form-control" [(ngModel)]="program.startTime" name="startTime" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">End Time *</label>
+                <input type="time" class="form-control" [(ngModel)]="program.endTime" name="endTime" required>
+              </div>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary" [disabled]="!programForm.valid || isLoading">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                {{ isEditMode ? 'Update Program' : 'Create Program' }}
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="goBack()">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4" *ngIf="isEditMode && program.id">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header">
+          <h5 class="mb-0">Enrollment Management</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <span>Enrolled: {{ program.enrollments?.length || 0 }}/{{ program.capacity }}</span>
+              <span class="badge" [class.bg-success]="(program.enrollments?.length || 0) < program.capacity" [class.bg-warning]="(program.enrollments?.length || 0) === program.capacity">
+                {{ (program.enrollments?.length || 0) < program.capacity ? 'Available' : 'Full' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <h6>Available Children</h6>
+            <div class="list-group" style="max-height: 200px; overflow-y: auto;">
+              <div class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let child of availableChildren">
+                <div>
+                  <strong>{{ child.firstName }} {{ child.lastName }}</strong>
+                  <small class="d-block text-muted">Age: {{ calculateAge(child.dateOfBirth) }} years</small>
+                </div>
+                <button class="btn btn-sm btn-success" (click)="enrollChild(child.id)">
+                  <i class="bi bi-plus"></i>
+                </button>
+              </div>
+              <div *ngIf="availableChildren.length === 0" class="list-group-item text-center text-muted">
+                No eligible children available
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <h6>Enrolled Children</h6>
+            <div class="list-group" style="max-height: 200px; overflow-y: auto;">
+              <div class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let enrollment of program.enrollments">
+                <div>
+                  <strong>{{ enrollment.child?.firstName }} {{ enrollment.child?.lastName }}</strong>
+                  <small class="d-block text-muted">Enrolled: {{ formatDate(enrollment.enrolledAt) }}</small>
+                </div>
+                <button class="btn btn-sm btn-danger" (click)="unenrollChild(enrollment.childId)">
+                  <i class="bi bi-dash"></i>
+                </button>
+              </div>
+              <div *ngIf="!program.enrollments?.length" class="list-group-item text-center text-muted">
+                No children enrolled yet
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

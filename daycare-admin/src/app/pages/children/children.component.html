@@ -1,14 +1,29 @@
 <div class="container-fluid py-4">
-  <app-titlepage
-  [title]="'Children'"
-  [breadcrumbs]="breadcrumbs">
-</app-titlepage>
-
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Children Management</h2>
-    <button class="btn btn-primary custom-btn-add" (click)="openAddModal()">
-      <i class="bi bi-plus-circle me-2"></i>Add Child
-    </button>
+  <div class="d-flex justify-content-between">
+    <div>
+      <app-titlepage 
+        title="Children Management"
+        [breadcrumbs]="breadcrumbs">
+      </app-titlepage>
+    </div>
+    <div class="d-flex gap-2">
+      <div class="dropdown me-2 export-btn">
+        <a href="javascript:void(0);" class="dropdown-toggle btn btn-light fw-medium d-inline-flex align-items-center export-btn__a" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi bi-download me-2"></i>Export
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end p-3">
+          <li>
+            <a href="javascript:void(0);" class="dropdown-item rounded-1"><i class="bi bi-file-earmark-pdf me-2"></i>Export as PDF</a>
+          </li>
+          <li>
+            <a href="javascript:void(0);" class="dropdown-item rounded-1"><i class="bi bi-file-earmark-excel me-2"></i>Export as Excel</a>
+          </li>
+        </ul>
+      </div>
+      <button class="btn btn-primary custom-btn-add" (click)="openAddModal()">
+        <i class="bi bi-plus-circle me-2"></i>Add Child
+      </button>
+    </div>
   </div>
 
   <!-- Search and Filter Bar -->
@@ -167,47 +182,62 @@
       </div>
 
       <!-- Grid View -->
-      <div *ngIf="!isLoading && filteredChildren.length > 0 && viewMode === 'grid'" class="row g-4">
-        <div class="col-md-6 col-lg-4 col-xl-4  " *ngFor="let child of filteredChildren">
-          <div class="card h-100 shadow-sm hover-card">
-            <div class="card-body text-center">
-              <img 
-                [src]="child.profilePicture || 'assets/default-avatar.svg'" 
-                alt="Profile" 
-                class="mb-3"
-                style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #e9ecef;">
-              <h5 class="card-title mb-1">{{ child.firstName }} {{ child.lastName }}</h5>
-              <p class="text-muted small mb-2">{{ calculateAge(child.dateOfBirth) }} years old • {{ child.gender }}</p>
-              
-              <div class="mb-2">
-                <small class="text-muted">
-                  <i class="bi bi-person me-1"></i>{{ child.parent?.firstName }} {{ child.parent?.lastName }}
-                </small>
+      <div *ngIf="!isLoading && filteredChildren.length > 0 && viewMode === 'grid'" class="row">
+        <div class="col-xl-4 col-md-6 d-flex" *ngFor="let child of filteredChildren">
+          <div class="card flex-fill">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <a href="#" class="link-primary" (click)="openEditModal(child)">C{{ child.id }}</a>
+              <div class="d-flex align-items-center">
+                <div class="dropdown">
+                  <a href="#" class="btn btn-white btn-icon btn-sm d-flex align-items-center justify-content-center rounded-circle p-0" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots-vertical fs-6"></i>
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-right p-3">
+                    <li>
+                      <a class="dropdown-item rounded-1" href="#" (click)="openEditModal(child)"><i class="bi bi-pencil me-2"></i>Edit</a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item rounded-1" href="#" (click)="deleteChild(child.id!)"><i class="bi bi-trash me-2"></i>Delete</a>
+                    </li>
+                  </ul>
+                </div>
               </div>
-
-              <div class="mb-2">
-                <small class="text-muted">
-                  <i class="bi bi-calendar me-1"></i>Enrolled: {{ formatDate(child.enrollmentDate) }}
-                </small>
+            </div>
+            <div class="card-body">
+              <div class="bg-light rounded-2 p-3 mb-3">
+                <div class="d-flex align-items-center">
+                  <a href="#" class="avatar avatar-lg flex-shrink-0" (click)="openEditModal(child)">
+                    <img [src]="child.profilePicture || 'assets/default-avatar.svg'" class="img-fluid rounded-circle" alt="img" style="width: 60px; height: 60px; object-fit: cover;">
+                  </a>
+                  <div class="ms-2">
+                    <h6 class="text-dark text-truncate mb-0">
+                      <a href="#" (click)="openEditModal(child)">{{ child.firstName }} {{ child.lastName }}</a>
+                    </h6>
+                    <p class="mb-0 text-muted small">{{ calculateAge(child.dateOfBirth) }} years • {{ child.gender }}</p>
+                  </div>
+                </div>
               </div>
-
-              <div class="mb-3">
-                <span *ngIf="child.allergies" class="badge bg-warning text-dark">
+              <div class="d-flex align-items-center justify-content-between gx-2">
+                <div>
+                  <p class="mb-0 text-muted small">Parent</p>
+                  <p class="text-dark mb-0 small">{{ child.parent?.firstName }} {{ child.parent?.lastName }}</p>
+                </div>
+                <div>
+                  <p class="mb-0 text-muted small">Enrolled</p>
+                  <p class="text-dark mb-0 small">{{ formatDate(child.enrollmentDate) }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center">
+                <span *ngIf="child.allergies" class="badge bg-warning text-dark small">
                   <i class="bi bi-exclamation-triangle me-1"></i>{{ child.allergies }}
                 </span>
-                <span *ngIf="!child.allergies" class="badge bg-success">
+                <span *ngIf="!child.allergies" class="badge bg-success small">
                   <i class="bi bi-check-circle me-1"></i>No Allergies
                 </span>
               </div>
-
-              <div class="d-flex gap-2 justify-content-center">
-                <button class="btn btn-sm btn-outline-primary" (click)="openEditModal(child)">
-                  <i class="bi bi-pencil"></i> Edit
-                </button>
-                <button class="btn btn-sm btn-outline-danger" (click)="deleteChild(child.id!)">
-                  <i class="bi bi-trash"></i> Delete
-                </button>
-              </div>
+              <a href="#" class="btn btn-light btn-sm" (click)="openEditModal(child)">View Details</a>
             </div>
           </div>
         </div>

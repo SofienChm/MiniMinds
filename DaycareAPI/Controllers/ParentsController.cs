@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DaycareAPI.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ParentsController : ControllerBase
@@ -20,6 +19,7 @@ namespace DaycareAPI.Controllers
 
         // GET: api/Parents
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Parent>>> GetParents()
         {
             return await _context.Parents
@@ -30,6 +30,7 @@ namespace DaycareAPI.Controllers
 
         // GET: api/Parents/5
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<Parent>> GetParent(int id)
         {
             var parent = await _context.Parents

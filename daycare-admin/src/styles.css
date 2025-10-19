@@ -60,6 +60,7 @@ body {
   font-size: 14px;
   transition: all 0.5s;
   font-weight: 500;
+  height: max-content;
 }
 
 .page-title{
@@ -67,4 +68,26 @@ body {
   font-weight: 600;
   color: #202C4B;
   font-family: "Roboto", sans-serif;
+}
+
+.btn-add{
+  border-radius: 5px;
+  padding: 0.5rem 0.85rem;
+  font-size: 14px;
+  transition: all 0.5s;
+  font-weight: 500;
+  background-color: #506EE4;
+  border: 1px solid #506EE4;
+  color: #FFF;
+}
+.export-btn .export-btn__a{ 
+  background-color: #E9EDF4;
+  border: 1px solid #E9EDF4;
+  color: #515B73;
+  font-size: 14px;
+  border-radius: 5px;
+  padding: 0.5rem 0.85rem;
+}
+.titlepage-container .title-section{
+  align-items: flex-start;
 }

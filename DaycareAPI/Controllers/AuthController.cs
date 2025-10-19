@@ -1,8 +1,10 @@
 using DaycareAPI.DTOs;
 using DaycareAPI.Models;
+using DaycareAPI.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -16,15 +18,18 @@ namespace DaycareAPI.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _configuration;
+        private readonly ApplicationDbContext _context;
 
         public AuthController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            ApplicationDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
+            _context = context;
         }
 
         [HttpPost("register")]
@@ -64,7 +69,7 @@ namespace DaycareAPI.Controllers
             if (!result.Succeeded)
                 return Unauthorized(new { message = "Invalid email or password" });
 
-            var token = GenerateJwtToken(user);
+            var token = await GenerateJwtToken(user);
 
             var response = new AuthResponseDto
             {
@@ -79,17 +84,31 @@ namespace DaycareAPI.Controllers
             return Ok(response);
         }
 
-        private string GenerateJwtToken(ApplicationUser user)
+        private async Task<string> GenerateJwtToken(ApplicationUser user)
         {
-            var claims = new[]
+            var roles = await _userManager.GetRolesAsync(user);
+            var role = roles.FirstOrDefault() ?? "Admin";
+            
+            var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Email!),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Email, user.Email!),
                 new Claim(ClaimTypes.GivenName, user.FirstName),
-                new Claim(ClaimTypes.Surname, user.LastName)
+                new Claim(ClaimTypes.Surname, user.LastName),
+                new Claim(ClaimTypes.Role, role)
             };
+            
+            // Add role-specific claims - simplified for now
+            if (role == "Parent")
+            {
+                claims.Add(new Claim("ParentId", "1"));
+            }
+            else if (role == "Teacher")
+            {
+                claims.Add(new Claim("TeacherId", "1"));
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

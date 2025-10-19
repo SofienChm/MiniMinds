@@ -3,10 +3,10 @@ using DaycareAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace DaycareAPI.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ChildrenController : ControllerBase
@@ -20,8 +20,26 @@ namespace DaycareAPI.Controllers
 
         // GET: api/Children
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Child>>> GetChildren()
         {
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            
+            if (userRole == "Parent")
+            {
+                var parentIdClaim = User.FindFirst("ParentId")?.Value;
+                if (int.TryParse(parentIdClaim, out int parentId))
+                {
+                    return await _context.Children
+                        .Where(c => c.ParentId == parentId)
+                        .Include(c => c.Parent)
+                        .OrderByDescending(c => c.CreatedAt)
+                        .ToListAsync();
+                }
+                return Forbid();
+            }
+            
+            // Admin and Teacher can see all children
             return await _context.Children
                 .Include(c => c.Parent)
                 .OrderByDescending(c => c.CreatedAt)
@@ -30,6 +48,7 @@ namespace DaycareAPI.Controllers
 
         // GET: api/Children/5
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<Child>> GetChild(int id)
         {
             var child = await _context.Children
@@ -40,6 +59,16 @@ namespace DaycareAPI.Controllers
 
             if (child == null)
                 return NotFound();
+                
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (userRole == "Parent")
+            {
+                var parentIdClaim = User.FindFirst("ParentId")?.Value;
+                if (int.TryParse(parentIdClaim, out int parentId) && child.ParentId != parentId)
+                {
+                    return Forbid();
+                }
+            }
 
             return child;
         }

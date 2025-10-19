@@ -1,0 +1,200 @@
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-6">
+      
+      <app-titlepage 
+        title="My Profile"
+        [breadcrumbs]="breadcrumbs">
+      </app-titlepage>
+
+      <!-- Profile Card -->
+      <div class="card profile-card">
+        <div class="card-body">
+          
+          <!-- Profile Picture Section -->
+          <div class="profile-picture-section text-center mb-4">
+            <div class="profile-picture-container">
+              <div class="profile-picture" [style.background-image]="profileImagePreview ? 'url(' + profileImagePreview + ')' : 'none'">
+                <span *ngIf="!profileImagePreview" class="profile-initials">{{getInitials()}}</span>
+              </div>
+              <div *ngIf="isEditing" class="picture-overlay">
+                <label for="profilePicture" class="btn btn-sm btn-light rounded-circle">
+                  <i class="fas fa-camera"></i>
+                </label>
+                <input type="file" id="profilePicture" class="d-none" accept="image/*" (change)="onFileSelected($event)">
+              </div>
+            </div>
+            <div class="mt-3">
+              <h4 class="mb-1">{{profile.firstName}} {{profile.lastName}}</h4>
+              <span class="badge" [class]="getRoleBadgeClass()">{{profile.role}}</span>
+            </div>
+          </div>
+
+          <!-- Profile Information Form -->
+          <form (ngSubmit)="saveProfile()" #profileForm="ngForm">
+            
+            <!-- Name Fields -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="firstName" class="form-label">First Name *</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="firstName" 
+                  [(ngModel)]="profile.firstName" 
+                  name="firstName" 
+                  [readonly]="!isEditing"
+                  required>
+              </div>
+              <div class="col-md-6">
+                <label for="lastName" class="form-label">Last Name *</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="lastName" 
+                  [(ngModel)]="profile.lastName" 
+                  name="lastName" 
+                  [readonly]="!isEditing"
+                  required>
+              </div>
+            </div>
+
+            <!-- Email Field -->
+            <div class="mb-3">
+              <label for="email" class="form-label">Email Address *</label>
+              <input 
+                type="email" 
+                class="form-control" 
+                id="email" 
+                [(ngModel)]="profile.email" 
+                name="email" 
+                [readonly]="!isEditing"
+                required>
+            </div>
+
+            <!-- City Field -->
+            <div class="mb-3">
+              <label for="city" class="form-label">City</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="city" 
+                [(ngModel)]="profile.city" 
+                name="city" 
+                [readonly]="!isEditing"
+                placeholder="Enter your city">
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <div>
+                <button *ngIf="!isEditing" type="button" class="btn btn-primary me-2" (click)="toggleEdit()" [disabled]="isLoading">
+                  <i class="fas fa-edit"></i> Edit Profile
+                </button>
+                <button *ngIf="isEditing" type="submit" class="btn btn-success me-2" [disabled]="isLoading">
+                  <i *ngIf="!isLoading" class="fas fa-save"></i>
+                  <i *ngIf="isLoading" class="fas fa-spinner fa-spin"></i>
+                  {{ isLoading ? 'Saving...' : 'Save Changes' }}
+                </button>
+                <button *ngIf="isEditing" type="button" class="btn btn-secondary" (click)="toggleEdit()" [disabled]="isLoading">
+                  <i class="fas fa-times"></i> Cancel
+                </button>
+              </div>
+              
+              <button type="button" class="btn btn-outline-warning" (click)="togglePasswordChange()" [disabled]="isLoading">
+                <i class="fas fa-key"></i> Change Password
+              </button>
+            </div>
+          </form>
+
+          <!-- Password Change Section -->
+          <div *ngIf="isChangingPassword" class="password-section">
+            <hr class="my-4">
+            <h5 class="mb-3"><i class="fas fa-lock me-2"></i>Change Password</h5>
+            
+            <form (ngSubmit)="changePassword()" #passwordForm="ngForm">
+              <div class="mb-3">
+                <label for="currentPassword" class="form-label">Current Password *</label>
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  id="currentPassword" 
+                  [(ngModel)]="passwords.currentPassword" 
+                  name="currentPassword" 
+                  required>
+              </div>
+
+              <div class="mb-3">
+                <label for="newPassword" class="form-label">New Password *</label>
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  id="newPassword" 
+                  [(ngModel)]="passwords.newPassword" 
+                  name="newPassword" 
+                  minlength="6"
+                  required>
+                <small class="form-text text-muted">Password must be at least 6 characters long</small>
+              </div>
+
+              <div class="mb-3">
+                <label for="confirmPassword" class="form-label">Confirm New Password *</label>
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  id="confirmPassword" 
+                  [(ngModel)]="passwords.confirmPassword" 
+                  name="confirmPassword" 
+                  required>
+              </div>
+
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-warning" [disabled]="isLoading">
+                  <i *ngIf="!isLoading" class="fas fa-key"></i>
+                  <i *ngIf="isLoading" class="fas fa-spinner fa-spin"></i>
+                  {{ isLoading ? 'Updating...' : 'Update Password' }}
+                </button>
+                <button type="button" class="btn btn-secondary" (click)="togglePasswordChange()" [disabled]="isLoading">
+                  <i class="fas fa-times"></i> Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Profile Stats -->
+      <div class="row mt-4">
+        <div class="col-md-4">
+          <div class="card text-center">
+            <div class="card-body">
+              <i class="fas fa-calendar-alt fa-2x text-primary mb-2"></i>
+              <h6>Member Since</h6>
+              <p class="text-muted mb-0">January 2024</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card text-center">
+            <div class="card-body">
+              <i class="fas fa-envelope fa-2x text-success mb-2"></i>
+              <h6>Messages Sent</h6>
+              <p class="text-muted mb-0">127</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card text-center">
+            <div class="card-body">
+              <i class="fas fa-shield-alt fa-2x text-warning mb-2"></i>
+              <h6>Account Status</h6>
+              <p class="text-muted mb-0">Active</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

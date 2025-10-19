@@ -9,7 +9,7 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = `${environment.apiUrl}/auth`;
+  private apiUrl = `${environment.apiUrl}/simpleauth`;
   private currentUserSubject = new BehaviorSubject<AuthResponse | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
@@ -52,5 +52,51 @@ export class AuthService {
 
   getCurrentUser(): AuthResponse | null {
     return this.currentUserSubject.value;
+  }
+
+  updateCurrentUser(user: AuthResponse): void {
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    this.currentUserSubject.next(user);
+  }
+
+  getUserRole(): string | null {
+    // For testing, always return Admin
+    return 'Admin';
+  }
+
+  getParentId(): number | null {
+    const user = this.getCurrentUser();
+    if (!user?.token) return null;
+    
+    try {
+      const payload = JSON.parse(atob(user.token.split('.')[1]));
+      return payload.ParentId ? parseInt(payload.ParentId) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  getTeacherId(): number | null {
+    const user = this.getCurrentUser();
+    if (!user?.token) return null;
+    
+    try {
+      const payload = JSON.parse(atob(user.token.split('.')[1]));
+      return payload.TeacherId ? parseInt(payload.TeacherId) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  isAdmin(): boolean {
+    return this.getUserRole() === 'Admin';
+  }
+
+  isParent(): boolean {
+    return this.getUserRole() === 'Parent';
+  }
+
+  isTeacher(): boolean {
+    return this.getUserRole() === 'Teacher';
   }
 }

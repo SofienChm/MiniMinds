@@ -16,6 +16,9 @@ namespace DaycareAPI.Data
         public DbSet<DailyActivity> DailyActivities { get; set; }
         public DbSet<Attendance> Attendances { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<DaycareProgram> DaycarePrograms { get; set; }
+        public DbSet<ProgramEnrollment> ProgramEnrollments { get; set; }
+        public DbSet<Message> Messages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -40,6 +43,23 @@ namespace DaycareAPI.Data
                 .HasForeignKey(a => a.ChildId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<ProgramEnrollment>()
+                .HasOne(pe => pe.Program)
+                .WithMany(p => p.Enrollments)
+                .HasForeignKey(pe => pe.ProgramId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ProgramEnrollment>()
+                .HasOne(pe => pe.Child)
+                .WithMany()
+                .HasForeignKey(pe => pe.ChildId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Prevent duplicate enrollments
+            builder.Entity<ProgramEnrollment>()
+                .HasIndex(pe => new { pe.ProgramId, pe.ChildId })
+                .IsUnique();
+
             // Indexes for better performance
             builder.Entity<Parent>()
                 .HasIndex(p => p.Email)
@@ -50,6 +70,22 @@ namespace DaycareAPI.Data
 
             builder.Entity<DailyActivity>()
                 .HasIndex(da => new { da.ChildId, da.ActivityTime });
+
+            // Message relationships
+            builder.Entity<Message>()
+                .HasOne(m => m.Sender)
+                .WithMany()
+                .HasForeignKey(m => m.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Message>()
+                .HasOne(m => m.Recipient)
+                .WithMany()
+                .HasForeignKey(m => m.RecipientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Message>()
+                .HasIndex(m => new { m.SenderId, m.RecipientId, m.SentAt });
         }
     }
 }

@@ -394,7 +394,7 @@ namespace DaycareAPI.Data
                             Date = date,
                             CheckInTime = checkInTime,
                             CheckOutTime = checkOutTime,
-                            Notes = i % 5 == 0 ? "Had a great day!" : null,
+                            CheckInNotes = i % 5 == 0 ? "Had a great day!" : null,
                             CreatedAt = checkInTime
                         });
                     }
@@ -450,7 +450,7 @@ namespace DaycareAPI.Data
                         {
                             ChildId = child.Id,
                             ActivityType = activityType,
-                            Description = description,
+                            Notes = description,
                             ActivityTime = date.AddHours(8 + j * 2).AddMinutes(new Random().Next(60)),
                             CreatedAt = date.AddHours(8 + j * 2)
                         });
@@ -490,7 +490,8 @@ namespace DaycareAPI.Data
                 {
                     notifications.Add(new Notification
                     {
-                        ParentId = parent.Id,
+                        UserId = parent.Id.ToString(),
+                        Title = "Daycare Notification",
                         Message = notificationMessages[new Random().Next(notificationMessages.Length)],
                         IsRead = new Random().Next(100) < 60, // 60% read rate
                         CreatedAt = DateTime.Now.AddDays(-new Random().Next(1, 15))
